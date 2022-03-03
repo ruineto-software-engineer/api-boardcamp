@@ -4,7 +4,7 @@ import validadeCategorySchemaMiddleware from "../middlewares/validateCategorySch
 
 const categoriesRouter = Router();
 
-categoriesRouter.post('/categories/register', validadeCategorySchemaMiddleware, registerCategory);
+categoriesRouter.post('/categories', validadeCategorySchemaMiddleware, registerCategory);
 categoriesRouter.get('/categories', getCategories);
 
 export default categoriesRouter;

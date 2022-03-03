@@ -3,7 +3,7 @@ import connection from "../db.js";
 export async function registerCategory(req, res) {
   const category = req.body;
   if(category.name === " "){
-    res.sendStatus(401);
+    res.sendStatus(400);
     return;
   }
 

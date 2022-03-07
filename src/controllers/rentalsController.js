@@ -485,7 +485,6 @@ export async function returnRental(req, res) {
         id
       ]);
     if (querySearchedRentalGames.rows[0].returnDate !== null) {
-      console.log("Entrei 1");
       res.sendStatus(400);
       return;
     }

@@ -64,6 +64,16 @@ export async function getRentals(req, res) {
   const gameId = req.query.gameId;
 
   try {
+    let offset = '';
+    if (req.query.offset) {
+      offset = `OFFSET ${req.query.offset}`;
+    }
+
+    let limit = '';
+    if (req.query.limit) {
+      limit = `LIMIT ${req.query.limit}`;
+    }
+
     if (customerId !== undefined) {
       const queryRentalsCustomerId = await connection.query({
         text: `
@@ -77,6 +87,9 @@ export async function getRentals(req, res) {
             JOIN games ON games.id=rentals."gameId"
             JOIN categories ON categories.id=games."categoryId"
           WHERE rentals."customerId"=$1
+          ORDER BY rentals.id
+            ${offset}
+            ${limit}
         `,
         rowMode: 'array'
       }, [customerId]);
@@ -135,6 +148,9 @@ export async function getRentals(req, res) {
             JOIN games ON games.id=rentals."gameId"
             JOIN categories ON categories.id=games."categoryId"
           WHERE rentals."gameId"=$1
+          ORDER BY rentals.id
+            ${offset}
+            ${limit}
         `,
         rowMode: 'array'
       }, [gameId]);
@@ -192,6 +208,9 @@ export async function getRentals(req, res) {
             JOIN customers ON customers.id=rentals."customerId"
             JOIN games ON games.id=rentals."gameId"
             JOIN categories ON categories.id=games."categoryId"
+          ORDER BY rentals.id
+            ${offset}
+            ${limit}
         `,
         rowMode: 'array'
       });

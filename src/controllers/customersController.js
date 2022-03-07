@@ -14,8 +14,10 @@ export async function registerCustomer(req, res) {
 
     if (searchedCustomer === undefined) {
       await connection.query(`
-        INSERT INTO customers (name, phone, cpf, birthday)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO customers 
+          (name, phone, cpf, birthday)
+        VALUES 
+          ($1, $2, $3, $4)
       `, [customer.name, customer.phone, customer.cpf, dayjs(customer.birthday).format('YYYY-MM-DD')]);
 
       res.sendStatus(201);
@@ -33,8 +35,23 @@ export async function getCustomers(req, res) {
   const cpf = req.query.cpf;
 
   try {
+    let offset = '';
+    if (req.query.offset) {
+      offset = `OFFSET ${req.query.offset}`;
+    }
+
+    let limit = '';
+    if (req.query.limit) {
+      limit = `LIMIT ${req.query.limit}`;
+    }
+
     if (cpf === undefined) {
-      const queryCustomers = await connection.query(`SELECT * FROM customers`);
+      const queryCustomers = await connection.query(`
+        SELECT * FROM customers
+        ORDER BY customers.id
+          ${offset}
+          ${limit}
+      `);
       const customersReader = queryCustomers.rows.map(customer => (
         { 
           ...customer, 
@@ -91,7 +108,8 @@ export async function updateCustomer(req, res) {
 
   try {
     await connection.query(`
-      UPDATE customers SET name=$1, phone=$2, cpf=$3, birthday=$4
+      UPDATE customers 
+      SET name=$1, phone=$2, cpf=$3, birthday=$4
       WHERE customers.id=$5
     `, [customer.name, customer.phone, customer.cpf, dayjs(customer.birthday).format('YYYY-MM-DD'), id]);
 

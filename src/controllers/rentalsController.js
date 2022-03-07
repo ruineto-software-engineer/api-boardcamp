@@ -74,6 +74,23 @@ export async function getRentals(req, res) {
       limit = `LIMIT ${req.query.limit}`;
     }
 
+    const orderByFilter = {
+      id: 1,
+      customerId: 2,
+      gameId: 3,
+      rentDate: 4,
+      daysRented: 5,
+      returnDate: 6,
+      originalPrice: 7,
+      delayFee: 8
+    }
+    let orderBy = '';
+    if (req.query.order && orderByFilter[req.query.order] && req.query.desc === undefined) {
+      orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
+    } else if (req.query.order && orderByFilter[req.query.order] && req.query.desc){
+      orderBy = `ORDER BY ${orderByFilter[req.query.order]} DESC`;
+    }
+
     if (customerId !== undefined) {
       const queryRentalsCustomerId = await connection.query({
         text: `
@@ -87,7 +104,7 @@ export async function getRentals(req, res) {
             JOIN games ON games.id=rentals."gameId"
             JOIN categories ON categories.id=games."categoryId"
           WHERE rentals."customerId"=$1
-          ORDER BY rentals.id
+          ${orderBy}
             ${offset}
             ${limit}
         `,
@@ -148,7 +165,7 @@ export async function getRentals(req, res) {
             JOIN games ON games.id=rentals."gameId"
             JOIN categories ON categories.id=games."categoryId"
           WHERE rentals."gameId"=$1
-          ORDER BY rentals.id
+          ${orderBy}
             ${offset}
             ${limit}
         `,
@@ -208,7 +225,7 @@ export async function getRentals(req, res) {
             JOIN customers ON customers.id=rentals."customerId"
             JOIN games ON games.id=rentals."gameId"
             JOIN categories ON categories.id=games."categoryId"
-          ORDER BY rentals.id
+          ${orderBy}
             ${offset}
             ${limit}
         `,

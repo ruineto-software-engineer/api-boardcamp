@@ -41,9 +41,20 @@ export async function getCategories(req, res) {
       limit = `LIMIT ${req.query.limit}`;
     }
 
+    const orderByFilter = {
+      id: 1,
+      name: 2
+    }
+    let orderBy = '';
+    if (req.query.order && orderByFilter[req.query.order] && req.query.desc === undefined) {
+      orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
+    } else if (req.query.order && orderByFilter[req.query.order] && req.query.desc){
+      orderBy = `ORDER BY ${orderByFilter[req.query.order]} DESC`;
+    }
+
     const queryCategories = await connection.query(`
       SELECT * FROM categories
-      ORDER BY categories.id
+      ${orderBy}
         ${offset}
         ${limit}
     `);

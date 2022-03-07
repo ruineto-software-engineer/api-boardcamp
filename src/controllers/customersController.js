@@ -45,10 +45,24 @@ export async function getCustomers(req, res) {
       limit = `LIMIT ${req.query.limit}`;
     }
 
+    const orderByFilter = {
+      id: 1,
+      name: 2,
+      phone: 3,
+      cpf: 4,
+      birthday: 5
+    }
+    let orderBy = '';
+    if (req.query.order && orderByFilter[req.query.order] && req.query.desc === undefined) {
+      orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
+    } else if (req.query.order && orderByFilter[req.query.order] && req.query.desc){
+      orderBy = `ORDER BY ${orderByFilter[req.query.order]} DESC`;
+    }
+
     if (cpf === undefined) {
       const queryCustomers = await connection.query(`
         SELECT * FROM customers
-        ORDER BY customers.id
+        ${orderBy}
           ${offset}
           ${limit}
       `);

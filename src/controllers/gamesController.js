@@ -52,6 +52,21 @@ export async function getGames(req, res) {
       limit = `LIMIT ${req.query.limit}`;
     }
 
+    const orderByFilter = {
+      id: 1,
+      name: 2,
+      image: 3,
+      stockTotal: 4,
+      categoryId: 5,
+      pricePerDay: 6
+    }
+    let orderBy = '';
+    if (req.query.order && orderByFilter[req.query.order] && req.query.desc === undefined) {
+      orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
+    } else if (req.query.order && orderByFilter[req.query.order] && req.query.desc){
+      orderBy = `ORDER BY ${orderByFilter[req.query.order]} DESC`;
+    }
+
     if (name === undefined) {
       const queryGames = await connection.query(`
         SELECT 
@@ -59,7 +74,7 @@ export async function getGames(req, res) {
           categories.name AS "categoryName" 
         FROM games 
           JOIN categories ON games."categoryId"=categories.id
-        ORDER BY games.id
+        ${orderBy}
           ${offset}
           ${limit}
       `);
@@ -73,7 +88,7 @@ export async function getGames(req, res) {
         FROM games 
           JOIN categories ON games."categoryId"=categories.id 
         WHERE LOWER(games.name) LIKE LOWER($1)
-        ORDER BY games.id
+        ${orderBy}
           ${offset}
           ${limit}
       `, [`${name}%`]);

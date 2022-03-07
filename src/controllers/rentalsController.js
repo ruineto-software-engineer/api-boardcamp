@@ -62,6 +62,8 @@ export async function registerRental(req, res) {
 export async function getRentals(req, res) {
   const customerId = req.query.customerId;
   const gameId = req.query.gameId;
+  const status = req.query.status;
+  const startDate = req.query.startDate;
 
   try {
     let offset = '';
@@ -87,7 +89,7 @@ export async function getRentals(req, res) {
     let orderBy = '';
     if (req.query.order && orderByFilter[req.query.order] && req.query.desc === undefined) {
       orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
-    } else if (req.query.order && orderByFilter[req.query.order] && req.query.desc){
+    } else if (req.query.order && orderByFilter[req.query.order] && req.query.desc) {
       orderBy = `ORDER BY ${orderByFilter[req.query.order]} DESC`;
     }
 
@@ -213,6 +215,182 @@ export async function getRentals(req, res) {
       });
 
       res.send(rentalsReaderGameId);
+    } else if (status !== undefined) {
+      if (status === "open") {
+        const queryRentalsOpenStatus = await connection.query({
+          text: `
+            SELECT 
+              rentals.*, 
+              customers.id AS "customersId", customers.name AS "customersName",
+              games.id AS "gamesId", games.name AS "gamesName", games."categoryId",
+              categories.name AS "categoryName"
+            FROM rentals
+              JOIN customers ON customers.id=rentals."customerId"
+              JOIN games ON games.id=rentals."gameId"
+              JOIN categories ON categories.id=games."categoryId"
+            WHERE rentals."returnDate" IS NULL
+          `,
+          rowMode: 'array'
+        });
+
+        const rentalsReader = queryRentalsOpenStatus.rows.map(rental => {
+          const [
+            id,
+            customerId,
+            gameId,
+            rentDate,
+            daysRented,
+            returnDate,
+            originalPrice,
+            delayFee,
+            customersId,
+            customersName,
+            gamesId,
+            gamesName,
+            categoryId,
+            categoryName
+          ] = rental;
+
+          return {
+            id,
+            customerId,
+            gameId,
+            rentDate: dayjs(rentDate).format('YYYY-MM-DD'),
+            daysRented,
+            returnDate: returnDate === null ? returnDate : dayjs(returnDate).format('YYYY-MM-DD'),
+            originalPrice,
+            delayFee,
+            customer: {
+              id: customersId,
+              name: customersName
+            },
+            game: {
+              id: gamesId,
+              name: gamesName,
+              categoryId,
+              categoryName
+            }
+          }
+        });
+
+        res.send(rentalsReader);
+      } else if (status === "close") {
+        const queryRentalsCloseStatus = await connection.query({
+          text: `
+            SELECT 
+              rentals.*, 
+              customers.id AS "customersId", customers.name AS "customersName",
+              games.id AS "gamesId", games.name AS "gamesName", games."categoryId",
+              categories.name AS "categoryName"
+            FROM rentals
+              JOIN customers ON customers.id=rentals."customerId"
+              JOIN games ON games.id=rentals."gameId"
+              JOIN categories ON categories.id=games."categoryId"
+            WHERE rentals."returnDate" IS NOT NULL
+          `,
+          rowMode: 'array'
+        });
+
+        const rentalsReader = queryRentalsCloseStatus.rows.map(rental => {
+          const [
+            id,
+            customerId,
+            gameId,
+            rentDate,
+            daysRented,
+            returnDate,
+            originalPrice,
+            delayFee,
+            customersId,
+            customersName,
+            gamesId,
+            gamesName,
+            categoryId,
+            categoryName
+          ] = rental;
+
+          return {
+            id,
+            customerId,
+            gameId,
+            rentDate: dayjs(rentDate).format('YYYY-MM-DD'),
+            daysRented,
+            returnDate: returnDate === null ? returnDate : dayjs(returnDate).format('YYYY-MM-DD'),
+            originalPrice,
+            delayFee,
+            customer: {
+              id: customersId,
+              name: customersName
+            },
+            game: {
+              id: gamesId,
+              name: gamesName,
+              categoryId,
+              categoryName
+            }
+          }
+        });
+
+        res.send(rentalsReader);
+      }
+    } else if (startDate !== undefined) {
+      const queryRentalsStartDate = await connection.query({
+        text: `
+          SELECT 
+            rentals.*, 
+            customers.id AS "customersId", customers.name AS "customersName",
+            games.id AS "gamesId", games.name AS "gamesName", games."categoryId",
+            categories.name AS "categoryName"
+          FROM rentals
+            JOIN customers ON customers.id=rentals."customerId"
+            JOIN games ON games.id=rentals."gameId"
+            JOIN categories ON categories.id=games."categoryId"
+          WHERE rentals."rentDate">$1 OR rentals."rentDate"=$1
+        `,
+        rowMode: 'array'
+      }, [startDate]);
+
+      const rentalsReader = queryRentalsStartDate.rows.map(rental => {
+        const [
+          id,
+          customerId,
+          gameId,
+          rentDate,
+          daysRented,
+          returnDate,
+          originalPrice,
+          delayFee,
+          customersId,
+          customersName,
+          gamesId,
+          gamesName,
+          categoryId,
+          categoryName
+        ] = rental;
+
+        return {
+          id,
+          customerId,
+          gameId,
+          rentDate: dayjs(rentDate).format('YYYY-MM-DD'),
+          daysRented,
+          returnDate: returnDate === null ? returnDate : dayjs(returnDate).format('YYYY-MM-DD'),
+          originalPrice,
+          delayFee,
+          customer: {
+            id: customersId,
+            name: customersName
+          },
+          game: {
+            id: gamesId,
+            name: gamesName,
+            categoryId,
+            categoryName
+          }
+        }
+      });
+
+      res.send(rentalsReader);
     } else {
       const queryRentals = await connection.query({
         text: `

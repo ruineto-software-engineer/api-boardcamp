@@ -60,7 +60,7 @@ export async function getGames(req, res) {
       categoryId: 5,
       pricePerDay: 6
     }
-    let orderBy = '';
+    let orderBy = 'ORDER BY games.id';
     if (req.query.order && orderByFilter[req.query.order] && req.query.desc === undefined) {
       orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
     } else if (req.query.order && orderByFilter[req.query.order] && req.query.desc){
@@ -71,9 +71,12 @@ export async function getGames(req, res) {
       const queryGames = await connection.query(`
         SELECT 
           games.*, 
-          categories.name AS "categoryName" 
+          categories.name AS "categoryName",
+          COUNT(rentals.id) "rentCount"
         FROM games 
+          LEFT JOIN rentals ON games.id=rentals."gameId"
           JOIN categories ON games."categoryId"=categories.id
+        GROUP BY games.id, categories.name
         ${orderBy}
           ${offset}
           ${limit}

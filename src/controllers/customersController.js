@@ -52,7 +52,7 @@ export async function getCustomers(req, res) {
       cpf: 4,
       birthday: 5
     }
-    let orderBy = '';
+    let orderBy = 'ORDER BY customers.id';
     if (req.query.order && orderByFilter[req.query.order] && req.query.desc === undefined) {
       orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
     } else if (req.query.order && orderByFilter[req.query.order] && req.query.desc){
@@ -61,7 +61,12 @@ export async function getCustomers(req, res) {
 
     if (cpf === undefined) {
       const queryCustomers = await connection.query(`
-        SELECT * FROM customers
+        SELECT 
+          customers.*,
+          COUNT(rentals.id) "rentCount" 
+        FROM customers
+          LEFT JOIN rentals ON customers.id=rentals."customerId"
+        GROUP BY customers.id
         ${orderBy}
           ${offset}
           ${limit}

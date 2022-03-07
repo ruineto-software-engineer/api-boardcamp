@@ -86,7 +86,7 @@ export async function getRentals(req, res) {
       originalPrice: 7,
       delayFee: 8
     }
-    let orderBy = '';
+    let orderBy = 'ORDER BY rentals.id';
     if (req.query.order && orderByFilter[req.query.order] && req.query.desc === undefined) {
       orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
     } else if (req.query.order && orderByFilter[req.query.order] && req.query.desc) {

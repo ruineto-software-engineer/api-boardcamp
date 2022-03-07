@@ -45,7 +45,7 @@ export async function getCategories(req, res) {
       id: 1,
       name: 2
     }
-    let orderBy = '';
+    let orderBy = 'ORDER BY categories.id';
     if (req.query.order && orderByFilter[req.query.order] && req.query.desc === undefined) {
       orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
     } else if (req.query.order && orderByFilter[req.query.order] && req.query.desc){

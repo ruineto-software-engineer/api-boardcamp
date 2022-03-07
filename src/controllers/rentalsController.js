@@ -524,11 +524,17 @@ export async function returnRental(req, res) {
       delayFee = Difference_In_Days * pricePerDay;
     }
 
-    await connection.query(`
-      INSERT INTO rentals 
-        ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee")
-      VALUES
-        ($1, $2, $3, $4, $5, $6, $7)
+    const rent = await connection.query(`
+      UPDATE rentals SET
+        "customerId"=$1,
+        "gameId"=$2,
+        "rentDate"=$3,
+        "daysRented"=$4,
+        "returnDate"=$5,
+        "originalPrice"=$6,
+        "delayFee"=$7
+      WHERE
+        id=$8
     `,
       [
         querySearchedRental.rows[0].customerId,
@@ -537,11 +543,12 @@ export async function returnRental(req, res) {
         querySearchedRental.rows[0].daysRented,
         dayjs().format('YYYY-MM-DD'),
         querySearchedRental.rows[0].originalPrice,
-        delayFee
+        delayFee,
+        querySearchedRental.rows[0].id
       ]
     );
 
-    res.sendStatus(201);
+    res.sendStatus(200);
   } catch (error) {
     console.log(error);
     res.sendStatus(500);

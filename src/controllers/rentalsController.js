@@ -25,7 +25,7 @@ export async function registerRental(req, res) {
 
     const queryRental = await connection.query(`
       SELECT * FROM rentals 
-      WHERE "gameId"=$1 AND "returnDate" IS null
+      WHERE "gameId"=$1 AND "returnDate" IS NULL
     `, [gameId]);
 
     if (validationCustomer && validationGame) {
@@ -477,29 +477,17 @@ export async function returnRental(req, res) {
 
     const querySearchedRentalGames = await connection.query(`
       SELECT * FROM rentals 
-      WHERE "customerId"=$1 AND "gameId"=$2
-    `, [querySearchedRental.rows[0].customerId, querySearchedRental.rows[0].gameId]);
-    if (querySearchedRentalGames.rows.length === 1) {
-      if (querySearchedRental.rows[0].returnDate !== null) {
-        console.log("entrei");
-        res.sendStatus(400);
-        return;
-      }
-    } else {
-      const queryQuantityNotDelivered = await connection.query(`
-        SELECT * FROM rentals
-        WHERE "customerId"=$1 AND "gameId"=$2 AND "returnDate" IS NULL
-      `, [querySearchedRental.rows[0].customerId, querySearchedRental.rows[0].gameId]);
-
-      const queryQuantityDelivered = await connection.query(`
-        SELECT * FROM rentals
-        WHERE "customerId"=$1 AND "gameId"=$2 AND "returnDate" IS NOT NULL
-      `, [querySearchedRental.rows[0].customerId, querySearchedRental.rows[0].gameId]);
-
-      if (queryQuantityNotDelivered.rows.length === queryQuantityDelivered.rows.length) {
-        res.sendStatus(400);
-        return;
-      }
+      WHERE "customerId"=$1 AND "gameId"=$2 AND id=$3
+    `,
+      [
+        querySearchedRental.rows[0].customerId,
+        querySearchedRental.rows[0].gameId,
+        id
+      ]);
+    if (querySearchedRentalGames.rows[0].returnDate !== null) {
+      console.log("Entrei 1");
+      res.sendStatus(400);
+      return;
     }
 
     const querySearchedGame = await connection.query(`

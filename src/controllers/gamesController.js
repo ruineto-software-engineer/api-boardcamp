@@ -42,14 +42,14 @@ export async function getGames(req, res) {
   try {
     if (name === undefined) {
       const queryGames = await connection.query(`
-        SELECT games.*, categories.name as "categoryName" FROM games 
+        SELECT games.*, categories.name AS "categoryName" FROM games 
         JOIN categories ON games."categoryId"=categories.id
       `);
 
       res.send(queryGames.rows);
     } else {
       const queryGamesCase = await connection.query(`
-        SELECT games.*, categories.name as "categoryName" FROM games 
+        SELECT games.*, categories.name AS "categoryName" FROM games 
         JOIN categories ON games."categoryId"=categories.id 
         WHERE LOWER(games.name) LIKE LOWER($1)
       `, [`${name}%`]);

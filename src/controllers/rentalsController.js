@@ -502,7 +502,7 @@ export async function returnRental(req, res) {
 
     let delayFee;
     if (receivedDate < expectedDate) {
-      delayFee = 0;
+      delayFee = null;
     } else {
       const Difference_In_Time = receivedDate.getTime() - expectedDate.getTime();
       const Difference_In_Days = Difference_In_Time / (1000 * 3600 * 24);
